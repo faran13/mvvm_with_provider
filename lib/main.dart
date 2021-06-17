@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mvvm_with_provider/main_contract.dart';
 import 'package:mvvm_with_provider/view_model/view_model.dart';
 import 'package:provider/provider.dart';
 
@@ -38,7 +37,7 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with MainPageView {
+class _MyHomePageState extends State<MyHomePage>{
   bool loading = false;
   ViewModel _viewModel;
 
@@ -46,7 +45,7 @@ class _MyHomePageState extends State<MyHomePage> with MainPageView {
   void initState() {
     super.initState();
     _viewModel = Provider.of<ViewModel>(context, listen: false);
-    _viewModel.init(mainPageView: this);
+    _viewModel.init();
   }
 
   @override
@@ -56,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> with MainPageView {
   }
 
   Widget _buildUI() {
-    if (loading) {
+    if (_viewModel.getLoadingState()) {
       return Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
@@ -115,12 +114,12 @@ class _MyHomePageState extends State<MyHomePage> with MainPageView {
                     text: 'Refresh UI',
                     color: Colors.orangeAccent,
                     onPress: () async {
-                      loading = true;
+                      _viewModel.setLoadingState(value: true);
                       _viewModel.setIsDataLoaded(value: true);
                       Future.delayed(
                         Duration(milliseconds: 800),
                         () {
-                          loading = false;
+                          _viewModel.setLoadingState(value: false);
                           _viewModel.setIsDataLoaded(value: false);
                         },
                       );
@@ -174,14 +173,4 @@ class _MyHomePageState extends State<MyHomePage> with MainPageView {
   }
 
   void refresh() => setState(() {});
-
-  @override
-  void hideLoading() {
-    loading = false;
-  }
-
-  @override
-  void showLoading() {
-    loading = true;
-  }
 }

@@ -4,7 +4,6 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:mvvm_with_provider/core/failure.dart';
 import 'package:mvvm_with_provider/core/success.dart';
-import 'package:mvvm_with_provider/main_contract.dart';
 import 'package:mvvm_with_provider/models/mock_response.dart';
 import 'package:mvvm_with_provider/network/api_end_points.dart';
 import 'package:mvvm_with_provider/network/network_helper.dart';
@@ -12,17 +11,17 @@ import 'package:mvvm_with_provider/network/network_helper_impl.dart';
 
 class ViewModel extends ChangeNotifier {
   MockResponse _mockResponse;
-  MainPageView _mainPageView;
   bool _isDataLoaded = false;
+  bool _loadingState = false;
   NetworkHelper _networkHelper = NetworkHelperImpl();
   
   ViewModel({MockResponse mockResponse}){
     this._mockResponse = mockResponse;
   }
 
-  void init({MainPageView mainPageView}){
+  void init(){
     _isDataLoaded = false;
-    this._mainPageView = mainPageView;
+    _loadingState = false;
   }
 
   List<ViewModel> _viewModels = [];
@@ -30,7 +29,7 @@ class ViewModel extends ChangeNotifier {
   Future<Either<Success, Failure>> getAllUsers() async {
     _viewModels = [];
     try {
-      _mainPageView.showLoading();
+      setLoadingState(value: true);
       notifyListeners();
       final either = await _networkHelper.get(
         APIEndpoints.getAllUsers,
@@ -46,17 +45,17 @@ class ViewModel extends ChangeNotifier {
             );
             _isDataLoaded = true;
           }
+          setLoadingState(value: false);
           notifyListeners();
-          _mainPageView.hideLoading();
           return Left(Success());
         },
         (error) {
-          _mainPageView.hideLoading();
+          setLoadingState(value: false);
           return Right(Failure());
         },
       );
     } catch (e) {
-      _mainPageView.hideLoading();
+
       return Right(Failure());
     }
   }
@@ -71,4 +70,11 @@ class ViewModel extends ChangeNotifier {
     this._isDataLoaded = value;
     notifyListeners();
   }
+
+  void setLoadingState({bool value}){
+    this._loadingState = value;
+    notifyListeners();
+  }
+
+  bool getLoadingState() => this._loadingState;
 }
